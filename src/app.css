@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+@import '@fontsource/fira-mono';
+@plugin '@tailwindcss/forms';
+
+@theme {
+	--color-primary-50: oklch(94.212% 0.05111 80.53);
+	--color-primary-100: oklch(92.232% 0.06864 79.672);
+	--color-primary-200: oklch(88.611% 0.10255 79.162);
+	--color-primary-300: oklch(84.919% 0.13145 77.543);
+	--color-primary-400: oklch(81.759% 0.1547 75.014);
+	--color-primary-500: oklch(78.589% 0.1674 70.036);
+	--color-primary-600: oklch(67.922% 0.14782 68.615);
+	--color-primary-700: oklch(54.381% 0.11771 69.265);
+	--color-primary-800: oklch(39.787% 0.08488 71.412);
+	--color-primary-900: oklch(24.09% 0.0487 77.861);
+	--color-primary-950: oklch(14.88% 0.03041 89.091);
+
+	--color-background: #0b1418;
+	--color-text: #e5e5e5;
+}
+
+:root {
+	--font-body:
+		Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+		'Open Sans', 'Helvetica Neue', sans-serif;
+	--font-mono: 'Fira Mono', monospace;
+	--column-width: 42rem;
+	--column-margin-top: 4rem;
+	font-family: var(--font-body);
+	color: var(--color-text);
+}
+
+body {
+	min-height: 100vh;
+	margin: 0;
+	background-attachment: fixed;
+	background-color: var(--color-background)
+}
+
+h1,
+h2,
+p {
+	font-weight: 400;
+}
+
+p {
+	line-height: 1.5;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+h1 {
+	font-size: 2rem;
+	text-align: center;
+}
+
+h2 {
+	font-size: 1rem;
+}
+
+pre {
+	font-size: 16px;
+	font-family: var(--font-mono);
+	background-color: rgba(255, 255, 255, 0.45);
+	border-radius: 3px;
+	box-shadow: 2px 2px 6px rgb(255 255 255 / 25%);
+	padding: 0.5em;
+	overflow-x: auto;
+	color: var(--color-text);
+}
+
+.text-column {
+	display: flex;
+	max-width: 48rem;
+	flex: 0.6;
+	flex-direction: column;
+	justify-content: center;
+	margin: 0 auto;
+}
+
+input,
+button {
+	font-size: inherit;
+	font-family: inherit;
+}
+
+button:focus:not(:focus-visible) {
+	outline: none;
+}
+
+@media (min-width: 720px) {
+	h1 {
+		font-size: 2.4rem;
+	}
+}
+
+.visually-hidden {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: auto;
+	margin: 0;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	white-space: nowrap;
+}
