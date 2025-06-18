@@ -3,21 +3,23 @@
 </script>
 
 <header>
-	<nav class="flex w-full justify-between items-center px-8 py-2 bg-lmao-500">
+	<nav class="bg-lmao-500 flex w-full items-center justify-between px-8 py-2">
 		<div>
 			<h1>Pulse</h1>
 		</div>
-		<div class="flex gap-4 items-center">
-			<p class="border-text border px-6 py-2 rounded-xl select-none cursor-pointer">
+		<div class="flex items-center gap-4">
+			<a href="/login" class="border-text cursor-pointer rounded-xl border-2 px-6 py-2 select-none">
 				Log in
-			</p>
-			<p class="border-primary-500 border bg-primary-500 px-4 py-2 rounded-xl text-background select-none cursor-pointer">
+			</a>
+			<a
+				href="/register"
+				class="border-primary-500 bg-primary-500 text-background cursor-pointer rounded-xl border-2 px-4 py-2 select-none"
+			>
 				Register
-			</p>
+			</a>
 		</div>
 	</nav>
 </header>
-
 
 <!-- <ul>
 	<li class="w-24 flex justify-center" aria-current={page.url.pathname === '/' ? 'page' : undefined}>
@@ -75,23 +77,5 @@
 		left: calc(50% - var(--size));
 		border: var(--size) solid transparent;
 		border-top: var(--size) solid var(--color-theme-1);
-	}
-
-	nav a {
-		display: flex;
-		height: 100%;
-		align-items: center;
-		padding: 0 0.5rem;
-		color: var(--color-text);
-		font-weight: 700;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		text-decoration: none;
-		transition: color 0.2s linear;
-	}
-
-	a:hover {
-		color: var(--color-theme-1);
 	}
 </style>

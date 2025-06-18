@@ -34,7 +34,7 @@ body {
 	min-height: 100vh;
 	margin: 0;
 	background-attachment: fixed;
-	background-color: var(--color-background)
+	background-color: var(--color-background);
 }
 
 h1,
@@ -45,10 +45,6 @@ p {
 
 p {
 	line-height: 1.5;
-}
-
-a:hover {
-	text-decoration: underline;
 }
 
 h1 {

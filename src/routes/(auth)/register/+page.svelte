@@ -1,162 +1,171 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
-  import type { ActionData, PageData } from './$types';
-  import { Button, Label, Input } from 'flowbite-svelte';
-  import { EyeOutline, EyeSlashOutline } from 'flowbite-svelte-icons';
+	import { enhance } from '$app/forms';
+	import type { ActionData, PageData } from './$types';
 
-  import blackLogo from '$lib/images/black-logo.svg';
-  import d20 from '$lib/images/d20.svg';
-  import defaultLogo from '$lib/images/logo.svg';
+	let showPassword: boolean = false;
+	let showConfirmPassword: boolean = false;
 
-  let showPassword: boolean = false;
-  let showConfirmPassword: boolean = false;
-
-  export let form: ActionData;
-  // export let data: PageData;
+	export let form: ActionData;
+	// export let data: PageData;
 </script>
 
-<div class="flex h-full w-full flex-col items-center gap-5 p-10">
-  <div class="flex flex-col items-center gap-4">
-    <img src={blackLogo} alt="" class="size-24" />
-    <h1 class="text-3xl">Create New Account</h1>
-  </div>
+<div class="flex w-full grow flex-col items-center justify-center gap-4 p-10">
+	<div class="flex flex-col items-center gap-2">
+		<p class="text-primary-500 text-3xl">Create New Account</p>
+	</div>
 
-  <form
-    action="?/register"
-    method="POST"
-    use:enhance
-    class="flex w-full max-w-96 flex-col gap-4 rounded-md bg-white p-4"
-  >
-    <div class="flex w-full flex-col gap-1">
-      <Label for="username">Username</Label>
-      <Input
-        name="username"
-        type="text"
-        id="username"
-        placeholder="Enter your username"
-        required
-      />
-    </div>
+	<form
+		action="?/register"
+		method="POST"
+		use:enhance
+		class="flex w-full max-w-96 flex-col gap-4 rounded-md p-4"
+	>
+		<div class="flex w-full flex-col">
+			<input
+				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
+				type="text"
+				name="username"
+				id="username"
+				placeholder="Enter your email address"
+				required
+			/>
+		</div>
 
-    <div class="flex w-full flex-col gap-1">
-      <Label for="fullname">Full Name</Label>
-      <Input
-        name="fullname"
-        type="text"
-        id="fullname"
-        placeholder="Enter your full name"
-        required
-      />
-    </div>
+		<div class="relative w-full">
+			<input
+				name="password"
+				id="password"
+				type={showPassword ? 'text' : 'password'}
+				placeholder="Enter password"
+				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
+				required
+			/>
 
-    <div class="flex w-full flex-col gap-1">
-      <Label for="email">Email address</Label>
-      <Input
-        name="email"
-        type="email"
-        id="email"
-        placeholder="Enter your email address"
-        required
-      />
-    </div>
+			<button
+				type="button"
+				class="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-800"
+				on:click={() => (showPassword = !showPassword)}
+				aria-label="Toggle password visibility"
+			>
+				{#if showPassword}
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5 cursor-pointer"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+						/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
+						/>
+					</svg>
+				{:else}
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5 cursor-pointer"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.964 9.964 0 012.584-4.133M6.223 6.223A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.961 9.961 0 01-4.221 5.172M3 3l18 18"
+						/>
+					</svg>
+				{/if}
+			</button>
+		</div>
 
-    <div class="flex w-full flex-col gap-1">
-      <Label for="address">Address</Label>
-      <Input
-        name="address"
-        type="text"
-        id="address"
-        placeholder="Enter your address"
-        required
-      />
-    </div>
+		<div class="relative w-full">
+			<input
+				name="repeatPassword"
+				id="repeatPassword"
+				type={showConfirmPassword ? 'text' : 'password'}
+				placeholder="Confirm password"
+				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
+				required
+			/>
 
-    <div class="flex w-full flex-col gap-1">
-      <Label for="phone">Phone</Label>
-      <Input
-        name="phone"
-        type="tel"
-        id="phone"
-        placeholder="Enter your phone number"
-        required
-      />
-    </div>
+			<button
+				type="button"
+				class="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-800"
+				on:click={() => (showConfirmPassword = !showConfirmPassword)}
+				aria-label="Toggle confirm password visibility"
+			>
+				{#if showConfirmPassword}
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5 cursor-pointer"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+						/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
+						/>
+					</svg>
+				{:else}
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5 cursor-pointer"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.964 9.964 0 012.584-4.133M6.223 6.223A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.961 9.961 0 01-4.221 5.172M3 3l18 18"
+						/>
+					</svg>
+				{/if}
+			</button>
+		</div>
 
-    <div class="flex w-full flex-col gap-1">
-      <Label for="password">Password</Label>
-      <Input
-        id="password"
-        type={showPassword ? 'text' : 'password'}
-        placeholder="Enter your password"
-        name="password"
-        required
-      >
-        <button
-          type="button"
-          slot="right"
-          on:click={() => (showPassword = !showPassword)}
-        >
-          {#if showPassword}
-            <EyeOutline class="size-6" />
-          {:else}
-            <EyeSlashOutline class="size-6" />
-          {/if}
-        </button>
-      </Input>
-    </div>
+		{#if form?.invalid}
+			<p class="text-center text-red-500">Something went wrong. Please try again.</p>
+		{/if}
 
-    <div class="flex w-full flex-col gap-1">
-      <Label for="repeatPassword">Confirm password</Label>
-      <Input
-        id="repeatPassword"
-        type={showConfirmPassword ? 'text' : 'password'}
-        placeholder="Confirm your password"
-        name="repeatPassword"
-        required
-      >
-        <button
-          type="button"
-          slot="right"
-          on:click={() => (showConfirmPassword = !showConfirmPassword)}
-        >
-          {#if showConfirmPassword}
-            <EyeOutline class="size-6" />
-          {:else}
-            <EyeSlashOutline class="size-6" />
-          {/if}
-        </button>
-      </Input>
-    </div>
+		{#if form?.email}
+			<p class="text-center text-red-500">Email is already taken.</p>
+		{/if}
 
-    {#if form?.invalid}
-      <p class="text-center text-red-500">
-        Something went wrong. Please try again.
-      </p>
-    {/if}
+		{#if form?.username}
+			<p class="text-center text-red-500">Username is already taken.</p>
+		{/if}
 
-    {#if form?.email}
-      <p class="text-center text-red-500">Email is already taken.</p>
-    {/if}
+		{#if form?.repeatPassword}
+			<p class="text-center text-red-500">Passwords must match.</p>
+		{/if}
 
-    {#if form?.username}
-      <p class="text-center text-red-500">Username is already taken.</p>
-    {/if}
-
-    {#if form?.repeatPassword}
-      <p class="text-center text-red-500">Passwords must match.</p>
-    {/if}
-
-    <Button type="submit" class="mt-4 w-full bg-geek">Register</Button>
-    <p class="text-center">
-      Already have an account? <a class="text-geek" href="/login">Log in.</a>
-    </p>
-  </form>
-
-  <div class="fixed bottom-0 left-0 -z-10 m-4 my-8 hidden size-48 sm:block">
-    <img src={defaultLogo} alt="" class="h-full w-full" />
-  </div>
-
-  <div class="fixed -right-8 bottom-0 -z-10 size-60 sm:size-96">
-    <img src={d20} alt="" class="h-full w-full" />
-  </div>
+		<button
+			type="submit"
+			class="border-primary-500 bg-primary-500 text-background cursor-pointer rounded-lg border px-4 py-2 select-none"
+			>Register</button
+		>
+	</form>
+	<p class="mt-4 text-center">
+		Already have an account? <a class="text-primary-500" href="/login">Log in.</a>
+	</p>
 </div>
