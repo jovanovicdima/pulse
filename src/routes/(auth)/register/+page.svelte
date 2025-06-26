@@ -23,9 +23,9 @@
 		<div class="flex w-full flex-col">
 			<input
 				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
-				type="text"
-				name="username"
-				id="username"
+				type="email"
+				name="email"
+				id="email"
 				placeholder="Enter your email address"
 				required
 			/>

@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	import type { PageProps } from './$types';
 
-	let showPassword: boolean = false;
+	let showPassword: boolean = $state(false);
 
-	export let form: ActionData;
+	let { form }: PageProps = $props();
 </script>
 
 <div class="flex w-full grow flex-col items-center justify-center gap-4 p-10">
 	<div class="flex flex-col items-center gap-2">
 		<p class="text-primary-500 text-3xl">Welcome back!</p>
-		<p>Please, log in to your account.</p>
+		<p>Please log in to your account.</p>
 	</div>
 
 	<form
@@ -34,6 +34,8 @@
 			<input
 				type={showPassword ? 'text' : 'password'}
 				placeholder="Enter password"
+				name="password"
+				id="password"
 				required
 				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
 			/>
@@ -41,7 +43,7 @@
 			<button
 				type="button"
 				class="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-800"
-				on:click={() => (showPassword = !showPassword)}
+				onclick={() => (showPassword = !showPassword)}
 				aria-label="Toggle password visibility"
 			>
 				{#if showPassword}
@@ -84,11 +86,9 @@
 			</button>
 		</div>
 
-		<!-- {#if form?.credentials}
-      <p class="text-center text-red-500">
-        You have entered wrong credentials!
-      </p>
-    {/if} -->
+		{#if form?.credentials}
+			<p class="text-center text-red-500">You have entered wrong credentials!</p>
+		{/if}
 
 		<button
 			type="submit"

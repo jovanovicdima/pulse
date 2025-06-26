@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { enhance } from '$app/forms';
+
+	let { data }: { data: { userEmail: string | null } } = $props();
 </script>
 
 <header>
@@ -7,17 +9,31 @@
 		<div>
 			<h1>Pulse</h1>
 		</div>
-		<div class="flex items-center gap-4">
-			<a href="/login" class="border-text cursor-pointer rounded-xl border-2 px-6 py-2 select-none">
-				Log in
-			</a>
-			<a
-				href="/register"
-				class="border-primary-500 bg-primary-500 text-background cursor-pointer rounded-xl border-2 px-4 py-2 select-none"
-			>
-				Register
-			</a>
-		</div>
+		{#if data?.userEmail == null}
+			<div class="flex items-center gap-4">
+				<a
+					href="/login"
+					class="border-text cursor-pointer rounded-xl border-2 px-6 py-2 select-none"
+				>
+					Log in
+				</a>
+				<a
+					href="/register"
+					class="border-primary-500 bg-primary-500 text-background cursor-pointer rounded-xl border-2 px-4 py-2 select-none"
+				>
+					Register
+				</a>
+			</div>
+		{:else}
+			<form action="/logout" method="POST" use:enhance>
+				<button
+					type="submit"
+					class="border-text cursor-pointer rounded-xl border-2 px-6 py-2 select-none"
+				>
+					Log out
+				</button>
+			</form>
+		{/if}
 	</nav>
 </header>
 
@@ -39,35 +55,7 @@
 		justify-content: space-between;
 	}
 
-	svg {
-		width: 2em;
-		height: 3em;
-		display: block;
-	}
-
-	path {
-		fill: var(--background);
-	}
-
-	ul {
-		position: relative;
-		padding: 0;
-		margin: 0;
-		height: 3em;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		list-style: none;
-		background: var(--background);
-		background-size: contain;
-	}
-
-	li {
-		position: relative;
-		height: 100%;
-	}
-
-	li[aria-current='page']::before {
+	/* li[aria-current='page']::before {
 		--size: 6px;
 		content: '';
 		width: 0;
@@ -77,5 +65,5 @@
 		left: calc(50% - var(--size));
 		border: var(--size) solid transparent;
 		border-top: var(--size) solid var(--color-theme-1);
-	}
+	} */
 </style>

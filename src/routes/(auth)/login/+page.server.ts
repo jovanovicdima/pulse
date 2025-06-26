@@ -1,67 +1,48 @@
-// import { db } from '$lib/server/database';
+import bcrypt from 'bcrypt';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import redis from '$lib/redis';
+import { getRedisUserKey, getRedisUserSessionKey } from '$lib/utils/redisKeyUtils';
+import { randomUUID } from 'crypto';
 
 export const load: PageServerLoad = async (event) => {
-  if (event.locals.user) {
-    redirect(302, '/');
-  }
+	if (event.locals.userEmail) {
+		redirect(302, '/');
+	}
 };
 
 export const actions: Actions = {
-  login: async ({ cookies, request }) => {
-    const data = await request.formData();
+	login: async ({ cookies, request }) => {
+		const data = await request.formData();
 
-    const usernameOrEmail = data.get('username');
-    const password = data.get('password');
+		const email = data.get('email');
+		const password = data.get('password');
 
-    if (
-      typeof usernameOrEmail !== 'string' ||
-      typeof password !== 'string' ||
-      !usernameOrEmail ||
-      !password
-    ) {
-      return fail(400, { invalid: true });
-    }
+		if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+			return fail(400, { invalid: true });
+		}
 
-    const emailRegex =
-      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-    let user = null;
+		// user entered email
+		const hashedPassword: string | null = await redis.GET(getRedisUserKey(email));
+		const isPasswordCorrect = await bcrypt.compare(password, hashedPassword ?? '');
 
-    // if (usernameOrEmail.match(emailRegex)) {
-    //   // user entered email
-    //   user = await db.user.findUnique({
-    //     where: {
-    //       email: usernameOrEmail,
-    //     },
-    //   });
-    // } else {
-    //   // user entered username
-    //   user = await db.user.findUnique({
-    //     where: {
-    //       username: usernameOrEmail,
-    //     },
-    //   });
-    // }
+		// if wrong credentials
+		if (!hashedPassword || !isPasswordCorrect) {
+			return fail(400, { credentials: true });
+		}
 
-    // if wrong credentials
-    // if (!user) {
-    //   return fail(400, { credentials: true });
-    // }
+		const sessionID = randomUUID();
 
-    // const authenticatedUser = await db.user.update({
-    //   where: { username: user.username },
-    //   data: { userAuthToken: crypto.randomUUID() },
-    // });
+		await redis.SETEX(getRedisUserSessionKey(sessionID), 60 * 60, email); // 1 hour TTL
 
-    // cookies.set('session', authenticatedUser.userAuthToken, {
-    //   path: '/',
-    //   httpOnly: true,
-    //   sameSite: 'lax',
-    //   secure: process.env.NODE_ENV === 'production',
-    //   maxAge: 60 * 60,
-    // });
+		cookies.set('session', sessionID, {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production',
+			maxAge: 60 * 60
+		});
 
-    throw redirect(302, '/');
-  },
+		throw redirect(302, '/');
+	}
 };
