@@ -16,6 +16,18 @@
 	--color-primary-950: oklch(14.88% 0.03041 89.091);
 
 	--color-background: #0b1418;
+
+	--color-background2-50: var(--color-gray-50);
+	--color-background2-100: var(--color-gray-100);
+	--color-background2-200: var(--color-gray-200);
+	--color-background2-300: var(--color-gray-300);
+	--color-background2-400: var(--color-gray-400);
+	--color-background2-500: var(--color-gray-500);
+	--color-background2-600: var(--color-gray-600);
+	--color-background2-700: var(--color-gray-700);
+	--color-background2-800: var(--color-gray-800);
+	--color-background2-900: var(--color-gray-900);
+
 	--color-text: #e5e5e5;
 }
 
@@ -37,69 +49,8 @@ body {
 	background-color: var(--color-background);
 }
 
-h1,
-h2,
-p {
-	font-weight: 400;
-}
-
-p {
-	line-height: 1.5;
-}
-
-h1 {
-	font-size: 2rem;
-	text-align: center;
-}
-
-h2 {
-	font-size: 1rem;
-}
-
-pre {
-	font-size: 16px;
-	font-family: var(--font-mono);
-	background-color: rgba(255, 255, 255, 0.45);
-	border-radius: 3px;
-	box-shadow: 2px 2px 6px rgb(255 255 255 / 25%);
-	padding: 0.5em;
-	overflow-x: auto;
-	color: var(--color-text);
-}
-
-.text-column {
-	display: flex;
-	max-width: 48rem;
-	flex: 0.6;
-	flex-direction: column;
-	justify-content: center;
-	margin: 0 auto;
-}
-
-input,
-button {
-	font-size: inherit;
-	font-family: inherit;
-}
-
-button:focus:not(:focus-visible) {
-	outline: none;
-}
-
 @media (min-width: 720px) {
 	h1 {
 		font-size: 2.4rem;
 	}
-}
-
-.visually-hidden {
-	border: 0;
-	clip: rect(0 0 0 0);
-	height: auto;
-	margin: 0;
-	overflow: hidden;
-	padding: 0;
-	position: absolute;
-	width: 1px;
-	white-space: nowrap;
 }

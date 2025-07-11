@@ -25,7 +25,6 @@
 				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
 				type="email"
 				name="email"
-				id="email"
 				placeholder="Enter your email address"
 				required
 			/>
@@ -34,7 +33,6 @@
 		<div class="relative w-full">
 			<input
 				name="password"
-				id="password"
 				type={showPassword ? 'text' : 'password'}
 				placeholder="Enter password"
 				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
@@ -90,7 +88,6 @@
 		<div class="relative w-full">
 			<input
 				name="repeatPassword"
-				id="repeatPassword"
 				type={showConfirmPassword ? 'text' : 'password'}
 				placeholder="Confirm password"
 				class="text-background w-full rounded-lg border px-4 py-2 pr-10"
@@ -149,10 +146,6 @@
 
 		{#if form?.email}
 			<p class="text-center text-red-500">Email is already taken.</p>
-		{/if}
-
-		{#if form?.username}
-			<p class="text-center text-red-500">Username is already taken.</p>
 		{/if}
 
 		{#if form?.repeatPassword}

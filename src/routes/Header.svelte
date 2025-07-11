@@ -7,7 +7,7 @@
 <header>
 	<nav class="bg-lmao-500 flex w-full items-center justify-between px-8 py-2">
 		<div>
-			<h1>Pulse</h1>
+			<a href="/" class="text-4xl">Pulse</a>
 		</div>
 		{#if data?.userEmail == null}
 			<div class="flex items-center gap-4">
@@ -25,14 +25,17 @@
 				</a>
 			</div>
 		{:else}
-			<form action="/logout" method="POST" use:enhance>
-				<button
-					type="submit"
-					class="border-text cursor-pointer rounded-xl border-2 px-6 py-2 select-none"
-				>
-					Log out
-				</button>
-			</form>
+			<div class="flex items-center gap-4">
+				<a href="/new-event" class="text-text cursor-pointer rounded-xl px-4">Create new event</a>
+				<form action="/logout" method="POST" use:enhance>
+					<button
+						type="submit"
+						class="border-text cursor-pointer rounded-xl border-2 px-6 py-2 select-none"
+					>
+						Log out
+					</button>
+				</form>
+			</div>
 		{/if}
 	</nav>
 </header>
