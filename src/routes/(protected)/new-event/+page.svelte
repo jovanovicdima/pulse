@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { Ticket } from '$lib/models/Ticket';
+	import type { NewTicket } from '$lib/models/Ticket';
 
 	let title = $state('');
 	let description = $state('');
 	let location = $state('');
 	let date = $state('');
 	let time = $state('');
-	let tickets: Ticket[] = $state([]);
+	let tickets: NewTicket[] = $state([]);
 
 	function addTicket() {
 		tickets.push({ name: '', count: 0, price: 0 });
@@ -73,7 +73,6 @@
 		</button>
 	</div>
 
-	<!-- Hidden JSON field to hold serialized tickets -->
 	<input type="hidden" name="ticketsJson" value={JSON.stringify(tickets)} />
 
 	<div class="pt-4">

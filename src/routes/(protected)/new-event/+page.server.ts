@@ -75,11 +75,6 @@ export const actions: Actions = {
 			return fail(400, { invalidTicket: true });
 		}
 
-		// Log tickets (or save to Redis)
-		tickets.forEach(({ name, count, price }) => {
-			console.log(`${name}: ${count} @ ${price}`);
-		});
-
 		const multi = redis.MULTI();
 
 		const newEvent: NewEvent = {

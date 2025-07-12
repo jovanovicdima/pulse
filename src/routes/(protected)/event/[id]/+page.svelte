@@ -7,8 +7,8 @@
 	dayjs.extend(relativeTime);
 
 	const { data }: PageProps = $props();
-	const event = data.event;
-	const tickets = data.tickets;
+	const event = data.event!;
+	const tickets = data.tickets!;
 </script>
 
 <div class="mx-2 flex flex-col gap-12 px-1 py-2 sm:py-4 lg:px-4">

@@ -1,13 +1,12 @@
 import type { NewTicket, Ticket } from '$lib/models/Ticket';
 import redis from '$lib/redis';
-import { getRedisTicketHashKey, getRedisTicketListKey } from '$lib/utils/redisKeyUtils';
+import {
+	getRedisReservationKey,
+	getRedisTicketHashKey,
+	getRedisTicketListKey
+} from '$lib/utils/redisKeyUtils';
 
 type RedisMultiClient = ReturnType<typeof redis.multi>;
-
-// Helper function to get reservation key
-function getRedisReservationKey(eventId: string, ticketName: string): string {
-	return `reservation:${eventId}:${ticketName}`;
-}
 
 export class TicketRepository {
 	static async createTickets(eventId: string, tickets: NewTicket[]): Promise<void> {
@@ -50,6 +49,8 @@ export class TicketRepository {
 						const reserved = Number(reservedCount);
 						if (!isNaN(reserved) && reserved > 0) {
 							totalReserved += reserved;
+							console.log(email);
+							console.log(userEmail);
 							if (userEmail && email === userEmail) {
 								userReserved = reserved;
 							}
@@ -58,6 +59,7 @@ export class TicketRepository {
 
 					// Available = total - reserved + user's own reservation (so user doesn't block themselves)
 					const available = totalCount - totalReserved + userReserved;
+					console.log(available);
 
 					tickets.push({
 						name: data.name,

@@ -6,6 +6,6 @@ export const load = async () => {
 	const events = await EventRepository.getEvents(10);
 
 	return {
-		event: events
+		events: events
 	};
 };

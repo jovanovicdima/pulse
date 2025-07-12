@@ -6,7 +6,6 @@
 	let showConfirmPassword: boolean = false;
 
 	export let form: ActionData;
-	// export let data: PageData;
 </script>
 
 <div class="flex w-full grow flex-col items-center justify-center gap-4 p-10">

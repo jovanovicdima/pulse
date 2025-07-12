@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import type { Ticket } from '$lib/models/Ticket';
 	import { slide } from 'svelte/transition';
 
@@ -21,12 +22,20 @@
 		</div>
 		<div class="flex items-center gap-4">
 			<span class="text-lg font-medium">${ticket.price}</span>
-			<button
-				class="bg-primary-500 hover:bg-primary-400 cursor-pointer rounded px-4 py-2 font-semibold text-black"
-				onclick={() => (expanded = !expanded)}
-			>
-				Buy
-			</button>
+			<form action="?/tempReserve" method="POST" use:enhance>
+				<input type="hidden" name="name" value={ticket.name} />
+				<button
+					class="bg-primary-500 hover:bg-primary-400 cursor-pointer rounded px-4 py-2 font-semibold text-black"
+					onclick={(e) => {
+						if (expanded) {
+							e.preventDefault();
+						}
+						expanded = !expanded;
+					}}
+				>
+					Buy
+				</button>
+			</form>
 		</div>
 	</div>
 
