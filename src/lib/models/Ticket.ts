@@ -3,7 +3,7 @@ export interface Ticket {
 	count: number;
 	price: number;
 	available: number;
-	userReserved: boolean;
+	userBought: boolean;
 }
 
 export type NewTicket = Omit<Ticket, 'available' | 'userReserved'>;

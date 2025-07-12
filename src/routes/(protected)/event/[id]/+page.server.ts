@@ -35,7 +35,7 @@ export const actions: Actions = {
 		const eventID = params.id;
 
 		if (eventID == null) {
-			return error(404, 'Event not found');
+			error(404, 'Event not found');
 		}
 
 		const data = await request.formData();
@@ -47,5 +47,33 @@ export const actions: Actions = {
 		}
 
 		TicketRepository.reserveTickets(eventID, ticketName, locals.userEmail);
+	},
+
+	buy: async ({ request, params, locals }) => {
+		if (!locals.userEmail) {
+			error(400);
+		}
+
+		const eventID = params.id;
+		if (eventID == null) {
+			error(404, 'Event not found');
+		}
+
+		const data = await request.formData();
+		const ticketName = data.get('name');
+
+		if (typeof ticketName !== 'string' || !ticketName) {
+			return error(400);
+		}
+
+		try {
+			await TicketRepository.purchaseTicket(eventID, ticketName, locals.userEmail);
+		} catch (e) {
+			if (e instanceof Error) {
+				error(400, e.message);
+			} else {
+				error(400, 'Unknown error');
+			}
+		}
 	}
 };

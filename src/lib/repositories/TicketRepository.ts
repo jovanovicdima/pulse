@@ -23,7 +23,7 @@ export class TicketRepository {
 		}
 	}
 
-	static async getTickets(eventId: string, userEmail?: string): Promise<Ticket[]> {
+	static async getTickets(eventId: string, userEmail: string): Promise<Ticket[]> {
 		const listKey = getRedisTicketListKey(eventId);
 		const ticketNames = await redis.LRANGE(listKey, 0, -1);
 		const tickets: Ticket[] = [];
@@ -49,30 +49,74 @@ export class TicketRepository {
 						const reserved = Number(reservedCount);
 						if (!isNaN(reserved) && reserved > 0) {
 							totalReserved += reserved;
-							console.log(email);
-							console.log(userEmail);
 							if (userEmail && email === userEmail) {
 								userReserved = reserved;
 							}
 						}
 					}
 
-					// Available = total - reserved + user's own reservation (so user doesn't block themselves)
-					const available = totalCount - totalReserved + userReserved;
-					console.log(available);
+					// Fetch total purchased tickets
+					const totalSold = await TicketRepository.getTotalSold(eventId, name);
+
+					const available = totalCount - totalSold - totalReserved + userReserved;
+
+					const isUserBought = await TicketRepository.getPurchasedTicket(eventId, userEmail);
 
 					tickets.push({
 						name: data.name,
 						count: totalCount,
 						price,
 						available: Math.max(0, available),
-						userReserved: userReserved > 0
+						userBought: isUserBought != null
 					});
 				}
 			}
 		}
 
 		return tickets;
+	}
+
+	static async getTicketAvailableCount(
+		eventId: string,
+		name: string,
+		userEmail: string
+	): Promise<number> {
+		let count = 0;
+
+		const hashKey = getRedisTicketHashKey(eventId, name);
+		const data = await redis.HGETALL(hashKey);
+
+		if (data?.name && data?.count && data?.price) {
+			const totalCount = Number(data.count);
+			const price = Number(data.price);
+
+			if (!isNaN(totalCount) && !isNaN(price)) {
+				// Get total reserved count for this ticket
+				const reservationKey = getRedisReservationKey(eventId, name);
+				const reservations = await redis.HGETALL(reservationKey);
+
+				let totalReserved = 0;
+				let userReserved = 0;
+
+				// Calculate total reservations and check if user has reserved
+				for (const [email, reservedCount] of Object.entries(reservations)) {
+					const reserved = Number(reservedCount);
+					if (!isNaN(reserved) && reserved > 0) {
+						totalReserved += reserved;
+						if (userEmail && email === userEmail) {
+							userReserved = reserved;
+						}
+					}
+				}
+
+				// Fetch total purchased tickets
+				const totalSold = await TicketRepository.getTotalSold(eventId, name);
+
+				count = totalCount - totalSold - totalReserved + userReserved;
+			}
+		}
+
+		return count;
 	}
 
 	static async reserveTickets(
@@ -174,6 +218,36 @@ export class TicketRepository {
 		if (keysToDelete.length > 1) {
 			await redis.DEL(keysToDelete);
 		}
+	}
+
+	static async purchaseTicket(eventId: string, ticketName: string, email: string): Promise<void> {
+		const purchaseKey = `purchase:${eventId}:${email}`;
+
+		// Check if user already purchased
+		const alreadyBought = await redis.exists(purchaseKey);
+		if (alreadyBought) {
+			throw new Error('You already purchased a ticket for this event.');
+		}
+
+		const available = await TicketRepository.getTicketAvailableCount(eventId, ticketName, email);
+
+		if (available <= 0) {
+			throw new Error('No tickets available.');
+		}
+
+		// Save purchase and increment sold count
+		await redis.set(purchaseKey, ticketName);
+		await redis.incr(`sold:${eventId}:${ticketName}`);
+	}
+
+	static async getPurchasedTicket(eventId: string, email: string): Promise<string | null> {
+		const purchaseKey = `purchase:${eventId}:${email}`;
+		return await redis.get(purchaseKey);
+	}
+
+	static async getTotalSold(eventId: string, ticketName: string): Promise<number> {
+		const count = await redis.get(`sold:${eventId}:${ticketName}`);
+		return parseInt(count ?? '0') || 0;
 	}
 
 	// Multi methods (for batching operations)

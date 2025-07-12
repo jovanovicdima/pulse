@@ -9,6 +9,15 @@
 	const { data }: PageProps = $props();
 	const event = data.event!;
 	const tickets = data.tickets!;
+
+	let isTicketPurchased = $derived.by(() => {
+		for (const ticket of tickets) {
+			if (ticket.userBought) {
+				return true;
+			}
+		}
+		return false;
+	});
 </script>
 
 <div class="mx-2 flex flex-col gap-12 px-1 py-2 sm:py-4 lg:px-4">
@@ -88,9 +97,20 @@
 		</div>
 	</div>
 
-	<div class="flex flex-col gap-4">
-		{#each tickets as ticket}
-			<TicketCard {ticket} />
-		{/each}
-	</div>
+	{#if isTicketPurchased}
+		<div class="flex w-full justify-center">
+			<p>You already purchased ticket for this event.</p>
+		</div>
+	{:else}
+		<div class="flex flex-col gap-4">
+			{#each tickets as ticket}
+				<TicketCard
+					{ticket}
+					onTicketPurchase={() => {
+						isTicketPurchased = true;
+					}}
+				/>
+			{/each}
+		</div>
+	{/if}
 </div>
