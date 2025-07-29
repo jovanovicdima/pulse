@@ -3,12 +3,16 @@
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import type { PageProps } from './$types';
+	import { onDestroy, onMount } from 'svelte';
+	import type { Ticket } from '$lib/models/Ticket';
+	import type { Event } from '$lib/models/Event';
+	import { invalidateAll } from '$app/navigation';
 
 	dayjs.extend(relativeTime);
 
 	const { data }: PageProps = $props();
-	const event = data.event!;
-	const tickets = data.tickets!;
+	const event: Event = data.event!;
+	let tickets: Ticket[] = $state(data.tickets!);
 
 	let isTicketPurchased = $derived.by(() => {
 		for (const ticket of tickets) {
@@ -17,6 +21,31 @@
 			}
 		}
 		return false;
+	});
+
+	let eventSource: EventSource | null = null;
+
+	onMount(() => {
+		eventSource = new EventSource(`/api/sse/ticket-realtime?id=${event.id}`);
+
+		eventSource.onmessage = async (event) => {
+			await invalidateAll();
+			tickets = data.tickets ?? [];
+		};
+
+		eventSource.onerror = (error) => {
+			if (eventSource != null) {
+				console.error('SSE Error:', error);
+				eventSource.close();
+			}
+		};
+	});
+
+	onDestroy(() => {
+		if (eventSource != null) {
+			eventSource.close();
+			eventSource = null;
+		}
 	});
 </script>
 

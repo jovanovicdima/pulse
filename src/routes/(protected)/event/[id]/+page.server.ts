@@ -1,3 +1,4 @@
+import { redisPublisher } from '$lib/redis';
 import { EventRepository } from '$lib/repositories/EventRepository';
 import { TicketRepository } from '$lib/repositories/TicketRepository.js';
 import type { Actions } from '@sveltejs/kit';
@@ -47,6 +48,8 @@ export const actions: Actions = {
 		}
 
 		TicketRepository.reserveTickets(eventID, ticketName, locals.userEmail);
+
+		redisPublisher.publish('ticket-realtime', '');
 	},
 
 	buy: async ({ request, params, locals }) => {

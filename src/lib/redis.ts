@@ -11,4 +11,14 @@ redis.on('error', (err) => console.error('Redis Client Error', err));
 
 await redis.connect();
 
+export const redisSubscriber = createClient({
+	url: redisUrl
+});
+await redisSubscriber.connect();
+
+export const redisPublisher = createClient({
+	url: redisUrl
+});
+await redisPublisher.connect();
+
 export default redis;
