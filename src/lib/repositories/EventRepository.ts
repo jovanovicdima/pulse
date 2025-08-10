@@ -1,4 +1,5 @@
 import type { Event, NewEvent } from '$lib/models/Event';
+import neo from '$lib/neo4j';
 import redis from '$lib/redis';
 import { getRedisEventKey } from '$lib/utils/redisKeyUtils';
 import { randomUUID } from 'crypto';
@@ -101,38 +102,65 @@ export class EventRepository {
 		});
 
 		await redis.HSET(key, hashData);
-	}
 
-	static async updateEvent(event: Event): Promise<void> {
-		const key = getRedisEventKey(event.id);
-		const hashData: {
-			id: string;
-			title: string;
-			description: string;
-			location: string;
-			datetime: string;
-			postedBy: string;
-			image?: string | undefined;
-		} = {
-			id: String(event.id),
-			title: String(event.title),
-			description: String(event.description),
-			location: String(event.location),
-			datetime: String(event.datetime),
-			postedBy: String(event.postedBy)
-		};
+		const session = neo.session();
 
-		if (event.image) {
-			hashData.image = String(event.image);
+		try {
+			await session.run(
+				'CREATE (e:Event {id: $id, title: $title, description: $description, location: $location, image: $image})',
+				{
+					id: uuid,
+					title: event.title,
+					description: event.description,
+					location: event.location,
+					image: event.image ?? null
+				}
+			);
+
+			await session.run(
+				`
+				MATCH (e:Event {id: $uuid}), (u:User {email: $email})
+				CREATE (e)-[:CREATED_BY {datetime: $datetime}]->(u)
+				`,
+				{ uuid, email: event.postedBy, datetime: event.datetime }
+			);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			await session.close();
 		}
-
-		await redis.ZADD('events:byStartTime', {
-			score: new Date(event.datetime).getTime(),
-			value: event.id
-		});
-
-		await redis.HSET(key, hashData);
 	}
+
+	// static async updateEvent(event: Event): Promise<void> {
+	// 	const key = getRedisEventKey(event.id);
+	// 	const hashData: {
+	// 		id: string;
+	// 		title: string;
+	// 		description: string;
+	// 		location: string;
+	// 		datetime: string;
+	// 		postedBy: string;
+	// 		image?: string | undefined;
+	// 	} = {
+	// 		id: String(event.id),
+	// 		title: String(event.title),
+	// 		description: String(event.description),
+	// 		location: String(event.location),
+	// 		datetime: String(event.datetime),
+	// 		postedBy: String(event.postedBy)
+	// 	};
+
+	// 	if (event.image) {
+	// 		hashData.image = String(event.image);
+	// 	}
+
+	// 	await redis.ZADD('events:byStartTime', {
+	// 		score: new Date(event.datetime).getTime(),
+	// 		value: event.id
+	// 	});
+
+	// 	await redis.HSET(key, hashData);
+	// }
 
 	static async deleteEvent(id: string): Promise<void> {
 		const key = getRedisEventKey(id);
@@ -146,7 +174,7 @@ export class EventRepository {
 	}
 
 	// Multi methods (for batching operations)
-	static createEventMulti(event: NewEvent, multi: RedisMultiClient): string {
+	static async createEventMulti(event: NewEvent, multi: RedisMultiClient): Promise<string> {
 		const uuid = randomUUID();
 		const key = getRedisEventKey(uuid);
 		const hashData: Record<string, string> = {
@@ -169,29 +197,57 @@ export class EventRepository {
 		});
 
 		multi.HSET(key, hashData);
+
+		const session = neo.session();
+
+		try {
+			await session.run(
+				'CREATE (e:Event {id: $id, title: $title, description: $description, location: $location, image: $image})',
+				{
+					id: uuid,
+					title: event.title,
+					description: event.description,
+					location: event.location,
+					image: event.image ?? null
+				}
+			);
+
+			await session.run(
+				`
+				MATCH (e:Event {id: $uuid}), (u:User {email: $email})
+				CREATE (e)-[:CREATED_BY {datetime: $datetime}]->(u)
+				`,
+				{ uuid, email: event.postedBy, datetime: event.datetime }
+			);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			await session.close();
+		}
+
 		return hashData.id;
 	}
 
-	static updateEventMulti(event: Event, multi: RedisMultiClient): void {
-		const key = getRedisEventKey(event.id);
-		const hashData = {
-			id: String(event.id),
-			title: String(event.title),
-			description: String(event.description),
-			image: String(event.image),
-			location: String(event.location),
-			datetime: String(event.datetime),
-			postedBy: String(event.postedBy),
-			postedAt: String(event.postedAt)
-		};
+	// static updateEventMulti(event: Event, multi: RedisMultiClient): void {
+	// 	const key = getRedisEventKey(event.id);
+	// 	const hashData = {
+	// 		id: String(event.id),
+	// 		title: String(event.title),
+	// 		description: String(event.description),
+	// 		image: String(event.image),
+	// 		location: String(event.location),
+	// 		datetime: String(event.datetime),
+	// 		postedBy: String(event.postedBy),
+	// 		postedAt: String(event.postedAt)
+	// 	};
 
-		multi.ZADD('events:byStartTime', {
-			score: new Date(event.datetime).getTime(),
-			value: event.id
-		});
+	// 	multi.ZADD('events:byStartTime', {
+	// 		score: new Date(event.datetime).getTime(),
+	// 		value: event.id
+	// 	});
 
-		multi.HSET(key, hashData);
-	}
+	// 	multi.HSET(key, hashData);
+	// }
 
 	static deleteEventMulti(id: string, multi: RedisMultiClient): void {
 		const key = getRedisEventKey(id);

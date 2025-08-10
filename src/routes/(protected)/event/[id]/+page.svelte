@@ -6,13 +6,14 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { Ticket } from '$lib/models/Ticket';
 	import type { Event } from '$lib/models/Event';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	dayjs.extend(relativeTime);
 
 	const { data }: PageProps = $props();
-	const event: Event = data.event!;
-	let tickets: Ticket[] = $state(data.tickets!);
+	const event: Event = $derived(data.event!);
+	let tickets: Ticket[] = $derived(data.tickets!);
+	const recommendedEvents: Event[] = $derived(data.recommendedEvents!);
 
 	let isTicketPurchased = $derived.by(() => {
 		for (const ticket of tickets) {
@@ -107,11 +108,6 @@
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
-								d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"
-							/>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
 								d="M19.5 10c0 7.5-7.5 11.25-7.5 11.25S4.5 17.5 4.5 10a7.5 7.5 0 1115 0z"
 							/>
 						</svg>
@@ -127,7 +123,7 @@
 	</div>
 
 	{#if isTicketPurchased}
-		<div class="flex w-full justify-center">
+		<div class="text-primary-500 flex w-full justify-center">
 			<p>You already purchased ticket for this event.</p>
 		</div>
 	{:else}
@@ -139,6 +135,97 @@
 						isTicketPurchased = true;
 					}}
 				/>
+			{/each}
+		</div>
+	{/if}
+
+	{#if recommendedEvents}
+		<h2 class="mt-8 text-center text-3xl">Recommended Events</h2>
+		<div
+			class="mb-14 grid grid-cols-1 gap-4 lg:[grid-template-columns:repeat(3,minmax(300px,1fr))]"
+		>
+			{#each recommendedEvents as event}
+				<button
+					class="border-background2-600 cursor-pointer rounded-lg border"
+					onclick={() => {
+						goto(`/event/${event.id}`, { invalidateAll: true });
+					}}
+				>
+					<div
+						class="bg-background2-800 hover:bg-background2-700 flex h-full items-start justify-between p-4 transition"
+					>
+						<div class="">
+							{#if event.image}
+								<img
+									aria-hidden="true"
+									class="rounded-md"
+									src={event.image}
+									alt="event image preview"
+								/>
+							{:else}
+								<img
+									aria-hidden="true"
+									class="rounded-md"
+									src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/cta/cta-dashboard-mockup.svg"
+									alt="event image preview"
+								/>
+							{/if}
+
+							<div class="my-2 flex flex-col justify-between">
+								<div class="flex flex-col gap-4">
+									<div class="flex flex-col gap-2">
+										<h2 class="text-text text-left text-xl font-extrabold tracking-tight">
+											{event.title}
+										</h2>
+										<p class="text-left text-xs font-light text-gray-500">
+											Posted by {event.postedBy}
+											{dayjs().to(dayjs(event.postedAt))}
+										</p>
+										<p class="flex items-center gap-1 text-sm font-light text-gray-400">
+											<svg
+												class="h-4 w-4 text-gray-400"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="1.5"
+												viewBox="0 0 24 24"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M12 6v6l4 2m4-2a8 8 0 11-16 0 8 8 0 0116 0z"
+												/>
+											</svg>
+
+											{dayjs(event.datetime)}
+										</p>
+										<p class="flex items-center gap-1 text-sm font-light text-gray-400">
+											<svg
+												class="h-4 w-4 text-gray-400"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="1.5"
+												viewBox="0 0 24 24"
+												xmlns="http://www.w3.org/2000/svg"
+												>w-fill grid justify-center
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M19.5 10c0 7.5-7.5 11.25-7.5 11.25S4.5 17.5 4.5 10a7.5 7.5 0 1115 0z"
+												/>
+											</svg>
+
+											{event.location}
+										</p>
+									</div>
+									<p class="text-left font-light text-gray-400 md:text-lg">
+										{event.description}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</button>
 			{/each}
 		</div>
 	{/if}

@@ -85,7 +85,7 @@ export const actions: Actions = {
 			postedBy: locals.userEmail
 		};
 
-		const eventID = EventRepository.createEventMulti(newEvent, multi);
+		const eventID = await EventRepository.createEventMulti(newEvent, multi);
 		TicketRepository.createTicketsMulti(eventID, tickets, multi);
 
 		multi.EXEC();

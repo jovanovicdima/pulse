@@ -1,8 +1,8 @@
-import bcrypt from 'bcrypt';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import redis from '$lib/redis';
 import { getRedisUserKey } from '$lib/utils/redisKeyUtils';
+import { UserRepository } from '$lib/repositories/UserRepository';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.userEmail) {
@@ -41,11 +41,7 @@ export const actions: Actions = {
 			return fail(400, { email: true });
 		}
 
-		// create user
-		const hashedPassword = await bcrypt.hash(password, 12);
-
-		// Store in Redis
-		await redis.SET(getRedisUserKey(email), hashedPassword);
+		UserRepository.createUser(email, password);
 
 		// redirect to login page
 		throw redirect(303, '/login');

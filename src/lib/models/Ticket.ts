@@ -6,7 +6,7 @@ export interface Ticket {
 	userBought: boolean;
 }
 
-export type NewTicket = Omit<Ticket, 'available' | 'userReserved'>;
+export type NewTicket = Omit<Ticket, 'available' | 'userReserved' | 'userBought'>;
 
 export interface RedisTicketHash {
 	name: string;

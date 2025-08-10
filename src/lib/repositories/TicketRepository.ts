@@ -1,4 +1,5 @@
 import type { NewTicket, Ticket } from '$lib/models/Ticket';
+import neo from '$lib/neo4j';
 import redis from '$lib/redis';
 import {
 	getRedisReservationKey,
@@ -238,6 +239,23 @@ export class TicketRepository {
 		// Save purchase and increment sold count
 		await redis.set(purchaseKey, ticketName);
 		await redis.incr(`sold:${eventId}:${ticketName}`);
+		this.cancelReservation(eventId, ticketName, email);
+
+		const session = neo.session();
+
+		try {
+			await session.run(
+				`
+				MATCH (e:Event {id: $uuid}), (u:User {email: $email})
+				CREATE (u)-[:PURCHASED {ticketName: $ticketName}]->(e)
+				`,
+				{ email, uuid: eventId, ticketName }
+			);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			await session.close();
+		}
 	}
 
 	static async getPurchasedTicket(eventId: string, email: string): Promise<string | null> {
@@ -250,7 +268,6 @@ export class TicketRepository {
 		return parseInt(count ?? '0') || 0;
 	}
 
-	// Multi methods (for batching operations)
 	static createTicketsMulti(eventId: string, tickets: NewTicket[], multi: RedisMultiClient): void {
 		const listKey = getRedisTicketListKey(eventId);
 		for (const ticket of tickets) {

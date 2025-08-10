@@ -1,3 +1,5 @@
+import type { Event } from '$lib/models/Event.js';
+import neo from '$lib/neo4j.js';
 import { redisPublisher } from '$lib/redis';
 import { EventRepository } from '$lib/repositories/EventRepository';
 import { TicketRepository } from '$lib/repositories/TicketRepository.js';
@@ -21,9 +23,45 @@ export const load = async ({ params, locals }) => {
 		error(404, 'Event not found');
 	}
 
+	const session = neo.session();
+	let recommendedEvents: Event[] = [];
+
+	try {
+		const result = await session.run(
+			`
+			MATCH (targetUser:User {email: $email})-[:PURCHASED]->(event:Event)
+			MATCH (otherUser:User)-[:PURCHASED]->(event)
+			WHERE otherUser <> targetUser
+			MATCH (otherUser)-[:PURCHASED]->(recommended:Event)
+			WHERE NOT (targetUser)-[:PURCHASED]->(recommended)
+			OPTIONAL MATCH (recommended)-[r:CREATED_BY]->(creator:User)
+			RETURN recommended, r.datetime AS datetime, creator.email AS postedBy, COUNT(*) AS score
+			ORDER BY score DESC
+			LIMIT 3
+		`,
+			{ email: locals.userEmail }
+		);
+
+		recommendedEvents = result.records.map((record) => {
+			const eventNode = record.get('recommended');
+			return {
+				...eventNode.properties,
+				datetime: record.get('datetime'),
+				postedBy: record.get('postedBy')
+			};
+		});
+
+		recommendedEvents = recommendedEvents.filter((item) => item.id != event.id);
+	} catch (err) {
+		console.error(err);
+	} finally {
+		await session.close();
+	}
+
 	return {
 		event: event!,
-		tickets: tickets!
+		tickets: tickets!,
+		recommendedEvents: recommendedEvents
 	};
 };
 

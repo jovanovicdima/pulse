@@ -14,5 +14,23 @@ services:
       - '5540:5540'
     restart: unless-stopped
 
+  neo4j:
+    image: neo4j:2025.07
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_conf:/conf
+      - neo4j_plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    restart: always
+
 volumes:
   redis_volume:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_conf:
+  neo4j_plugins:
