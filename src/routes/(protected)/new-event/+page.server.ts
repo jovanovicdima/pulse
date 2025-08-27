@@ -6,6 +6,9 @@ import { EventRepository } from '$lib/repositories/EventRepository';
 import type { NewEvent } from '$lib/models/Event';
 import { TicketRepository } from '$lib/repositories/TicketRepository';
 import dayjs from 'dayjs';
+import { randomUUID } from 'crypto';
+import path from 'path';
+import fs from 'fs';
 
 function getStringField(form: FormData, key: string): string | null {
 	const value = form.get(key);
@@ -61,6 +64,13 @@ export const actions: Actions = {
 		const date = getStringField(form, 'date');
 		const time = getStringField(form, 'time');
 
+		const rawImage = form.get('image');
+		let image: File | null = null;
+
+		if (rawImage instanceof File) {
+			image = rawImage;
+		}
+
 		if (!title || !description || !location || !date || !time) {
 			return fail(400, { invalidInfo: true });
 		}
@@ -84,6 +94,22 @@ export const actions: Actions = {
 			location: location,
 			postedBy: locals.userEmail
 		};
+
+		if (image && image.size > 0 && image.name !== '') {
+			const ext = image.name.split('.').pop();
+			const filename = randomUUID() + '.' + ext;
+
+			const uploadDir = path.join('static', 'eventImages');
+			if (!fs.existsSync(uploadDir)) {
+				fs.mkdirSync(uploadDir, { recursive: true });
+			}
+
+			// Save into static/eventImages/
+			const buffer = Buffer.from(await image.arrayBuffer());
+			const filePath = path.join(uploadDir, filename);
+			fs.writeFileSync(filePath, buffer);
+			newEvent.image = filename;
+		}
 
 		const eventID = await EventRepository.createEventMulti(newEvent, multi);
 		TicketRepository.createTicketsMulti(eventID, tickets, multi);

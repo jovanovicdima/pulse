@@ -12,24 +12,28 @@
 	let { event }: EventCardProps = $props();
 </script>
 
-<section class="border-primary-500 rounded-md border">
+<div class="border-background2-600 bg-background2-800 hover:bg-background2-700 rounded-lg border">
 	<div
-		class="mx-2 max-w-screen-xl gap-8 px-1 py-2 sm:py-4 md:grid md:grid-cols-2 lg:px-4 xl:gap-16"
+		class="mx-2 h-96 max-w-screen-xl gap-8 px-1 py-2 sm:py-4 md:grid md:grid-cols-2 lg:px-4 xl:gap-16"
 	>
-		{#if event.image}
-			<img
-				aria-hidden="true"
-				class="w-full rounded-md"
-				src={event.image}
-				alt="event image preview"
-			/>
+		{#if event.image && event.image !== ''}
+			<div class="w-full overflow-hidden rounded-md">
+				<img
+					aria-hidden="true"
+					class="h-full w-full object-cover"
+					src={`/eventImages/${event.image}`}
+					alt="event image preview"
+				/>
+			</div>
 		{:else}
-			<img
-				aria-hidden="true"
-				class="w-full rounded-md"
-				src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/cta/cta-dashboard-mockup.svg"
-				alt="event image preview"
-			/>
+			<div class="w-full overflow-hidden rounded-md">
+				<img
+					aria-hidden="true"
+					class="h-full w-full object-cover"
+					src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/cta/cta-dashboard-mockup.svg"
+					alt="event image preview"
+				/>
+			</div>
 		{/if}
 
 		<div class="my-2 flex flex-col justify-between">
@@ -84,14 +88,14 @@
 						{event.location}
 					</p>
 				</div>
-				<p class="mb-6 font-light text-gray-400 md:text-lg">
+				<p class="mb-6 line-clamp-4 font-light text-gray-400 md:text-lg">
 					{event.description}
 				</p>
 			</div>
 
 			<a
 				href={`event/${event.id}`}
-				class="bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:focus:ring-primary-900 inline-flex w-fit items-center rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4"
+				class="bg-primary-500 hover:bg-primary-600 focus:ring-primary-300 inline-flex w-fit items-center rounded-lg px-5 py-2.5 text-center text-sm font-bold text-black focus:ring-4"
 			>
 				View details
 				<svg
@@ -108,4 +112,4 @@
 			</a>
 		</div>
 	</div>
-</section>
+</div>

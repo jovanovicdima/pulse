@@ -11,7 +11,7 @@ export class EventRepository {
 	private constructor() {}
 
 	static async getEvents(take: number, skip = 0): Promise<Event[]> {
-		const now = dayjs().unix(); // Current timestamp
+		const now = dayjs().unix();
 
 		// Get events that start from now onwards
 		const ids = await redis.ZRANGEBYSCORE('events:byStartTime', now, '+inf', {
@@ -119,9 +119,9 @@ export class EventRepository {
 
 			await session.run(
 				`
-				MATCH (e:Event {id: $uuid}), (u:User {email: $email})
-				CREATE (e)-[:CREATED_BY {datetime: $datetime}]->(u)
-				`,
+					MATCH (e:Event {id: $uuid}), (u:User {email: $email})
+					CREATE (e)-[:CREATED_BY {datetime: $datetime}]->(u)
+					`,
 				{ uuid, email: event.postedBy, datetime: event.datetime }
 			);
 		} catch (error) {
@@ -131,41 +131,67 @@ export class EventRepository {
 		}
 	}
 
-	// static async updateEvent(event: Event): Promise<void> {
-	// 	const key = getRedisEventKey(event.id);
-	// 	const hashData: {
-	// 		id: string;
-	// 		title: string;
-	// 		description: string;
-	// 		location: string;
-	// 		datetime: string;
-	// 		postedBy: string;
-	// 		image?: string | undefined;
-	// 	} = {
-	// 		id: String(event.id),
-	// 		title: String(event.title),
-	// 		description: String(event.description),
-	// 		location: String(event.location),
-	// 		datetime: String(event.datetime),
-	// 		postedBy: String(event.postedBy)
-	// 	};
+	static async updateEvent(event: Event): Promise<void> {
+		const key = getRedisEventKey(event.id);
+		const hashData: Record<string, string> = {
+			id: String(event.id),
+			title: String(event.title),
+			description: String(event.description),
+			location: String(event.location),
+			datetime: String(event.datetime),
+			postedBy: String(event.postedBy),
+			postedAt: String(event.postedAt)
+		};
 
-	// 	if (event.image) {
-	// 		hashData.image = String(event.image);
-	// 	}
+		if (event.image) {
+			hashData.image = String(event.image);
+		}
 
-	// 	await redis.ZADD('events:byStartTime', {
-	// 		score: new Date(event.datetime).getTime(),
-	// 		value: event.id
-	// 	});
+		await redis.ZADD('events:byStartTime', {
+			score: dayjs(event.datetime).unix(),
+			value: event.id
+		});
+		await redis.HSET(key, hashData);
 
-	// 	await redis.HSET(key, hashData);
-	// }
+		const session = neo.session();
+		try {
+			await session.run(
+				`
+				MATCH (e:Event {id: $id})
+				SET e.title = $title,
+					e.description = $description,
+					e.location = $location,
+					e.image = $image
+				`,
+				{
+					id: event.id,
+					title: event.title,
+					description: event.description,
+					location: event.location,
+					image: event.image ?? null
+				}
+			);
+		} catch (error) {
+			console.error('Neo4j update error:', error);
+		} finally {
+			await session.close();
+		}
+	}
 
 	static async deleteEvent(id: string): Promise<void> {
 		const key = getRedisEventKey(id);
+
 		await redis.ZREM('events:byStartTime', id);
 		await redis.DEL(key);
+
+		const session = neo.session();
+		try {
+			await session.run('MATCH (e:Event {id: $id}) DETACH DELETE e', { id });
+		} catch (error) {
+			console.error('Neo4j delete error:', error);
+		} finally {
+			await session.close();
+		}
 	}
 
 	static async eventExists(id: string): Promise<boolean> {
@@ -228,30 +254,70 @@ export class EventRepository {
 		return hashData.id;
 	}
 
-	// static updateEventMulti(event: Event, multi: RedisMultiClient): void {
-	// 	const key = getRedisEventKey(event.id);
-	// 	const hashData = {
-	// 		id: String(event.id),
-	// 		title: String(event.title),
-	// 		description: String(event.description),
-	// 		image: String(event.image),
-	// 		location: String(event.location),
-	// 		datetime: String(event.datetime),
-	// 		postedBy: String(event.postedBy),
-	// 		postedAt: String(event.postedAt)
-	// 	};
+	static updateEventMulti(event: Event, multi: RedisMultiClient): void {
+		const key = getRedisEventKey(event.id);
+		const hashData: Record<string, string> = {
+			id: String(event.id),
+			title: String(event.title),
+			description: String(event.description),
+			location: String(event.location),
+			datetime: String(event.datetime),
+			postedBy: String(event.postedBy),
+			postedAt: String(event.postedAt)
+		};
 
-	// 	multi.ZADD('events:byStartTime', {
-	// 		score: new Date(event.datetime).getTime(),
-	// 		value: event.id
-	// 	});
+		if (event.image) {
+			hashData.image = String(event.image);
+		}
 
-	// 	multi.HSET(key, hashData);
-	// }
+		multi.ZADD('events:byStartTime', {
+			score: dayjs(event.datetime).unix(),
+			value: event.id
+		});
+		multi.HSET(key, hashData);
+
+		(async () => {
+			const session = neo.session();
+			try {
+				await session.run(
+					`
+					MATCH (e:Event {id: $id})
+					SET e.title = $title,
+						e.description = $description,
+						e.location = $location,
+						e.image = $image
+					`,
+					{
+						id: event.id,
+						title: event.title,
+						description: event.description,
+						location: event.location,
+						image: event.image ?? null
+					}
+				);
+			} catch (error) {
+				console.error('Neo4j update multi error:', error);
+			} finally {
+				await session.close();
+			}
+		})();
+	}
 
 	static deleteEventMulti(id: string, multi: RedisMultiClient): void {
 		const key = getRedisEventKey(id);
 		multi.ZREM('events:byStartTime', id);
 		multi.DEL(key);
+
+		// Neo4j deletion cannot be batched with Redis, so handle separately
+		(async () => {
+			const session = neo.session();
+			try {
+				await session.run('MATCH (e:Event {id: $id}) DETACH DELETE e', { id });
+			} catch (error) {
+				console.error('Neo4j delete multi error:', error);
+			} finally {
+				await session.close();
+			}
+		})();
 	}
 }

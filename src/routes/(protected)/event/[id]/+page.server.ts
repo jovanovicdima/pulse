@@ -35,7 +35,12 @@ export const load = async ({ params, locals }) => {
 			MATCH (otherUser)-[:PURCHASED]->(recommended:Event)
 			WHERE NOT (targetUser)-[:PURCHASED]->(recommended)
 			OPTIONAL MATCH (recommended)-[r:CREATED_BY]->(creator:User)
-			RETURN recommended, r.datetime AS datetime, creator.email AS postedBy, COUNT(*) AS score
+			WITH recommended, r, creator
+			WHERE r IS NULL OR datetime(r.datetime) > datetime()
+			RETURN recommended,
+				r.datetime AS datetime,
+				creator.email AS postedBy,
+				COUNT(*) AS score
 			ORDER BY score DESC
 			LIMIT 3
 		`,
@@ -61,7 +66,8 @@ export const load = async ({ params, locals }) => {
 	return {
 		event: event!,
 		tickets: tickets!,
-		recommendedEvents: recommendedEvents
+		recommendedEvents: recommendedEvents,
+		userEmail: locals.userEmail
 	};
 };
 
@@ -109,6 +115,28 @@ export const actions: Actions = {
 
 		try {
 			await TicketRepository.purchaseTicket(eventID, ticketName, locals.userEmail);
+		} catch (e) {
+			if (e instanceof Error) {
+				error(400, e.message);
+			} else {
+				error(400, 'Unknown error');
+			}
+		}
+	},
+
+	delete: async ({ params, locals }) => {
+		if (!locals.userEmail) {
+			error(400);
+		}
+
+		const eventID = params.id;
+		if (eventID == null) {
+			error(404, 'Event not found');
+		}
+
+		try {
+			await TicketRepository.deleteTickets(eventID);
+			await EventRepository.deleteEvent(eventID);
 		} catch (e) {
 			if (e instanceof Error) {
 				error(400, e.message);
